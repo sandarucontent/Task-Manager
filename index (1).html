@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Systems Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e2ddd5;
+    --border2: #ccc8be;
+    --text: #1a1917;
+    --text2: #6b6760;
+    --text3: #a09c95;
+    --green: #2d7a5f;
+    --green-light: #e6f4ee;
+    --green-mid: #4aaa84;
+    --purple: #5a3e8a;
+    --purple-light: #ede8f7;
+    --amber: #b8750a;
+    --amber-light: #fef3e2;
+    --coral: #c0442a;
+    --coral-light: #fdeee9;
+    --blue: #1e5fa8;
+    --blue-light: #e8f1fb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .logo span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .date-chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  /* Summary row */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  .summary-num {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary-lbl {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Progress */
+  .progress-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-text {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .progress-pct {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--green);
+  }
+
+  .bar-bg {
+    height: 7px;
+    background: var(--surface2);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-mid), var(--green));
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Pillars */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 520px) {
+    .pillars-grid { grid-template-columns: 1fr; }
+    .summary-row { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .pillar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .pillar-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pillar-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pillar-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text2);
+  }
+
+  .pillar-count {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .check-list { padding: 6px 0; }
+
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 0;
+  }
+
+  .check-row:hover { background: var(--surface2); }
+
+  .check-box {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border2);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+  }
+
+  .check-box.done {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .check-box.done::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 8px;
+    border: 1.5px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translate(-0.5px, -1px);
+  }
+
+  .check-label {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.45;
+    transition: color 0.2s;
+  }
+
+  .check-label.done {
+    color: var(--text3);
+    text-decoration: line-through;
+  }
+
+  /* Reflection */
+  .reflection-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    resize: none;
+    min-height: 90px;
+    line-height: 1.65;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--green-mid); }
+
+  .save-btn {
+    margin-top: 10px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 20px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .save-btn:hover { background: var(--green-mid); }
+  .save-btn:active { transform: scale(0.97); }
+
+  .save-confirm {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--green);
+    margin-left: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Streak */
+  .streak-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .streak-dots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .streak-item { text-align: center; }
+
+  .streak-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--text3);
+    margin: 0 auto 3px;
+    font-family: var(--mono);
+  }
+
+  .streak-dot.filled { background: var(--green); border-color: var(--green); }
+  .streak-dot.today-ring { border: 2px solid var(--green); }
+
+  .streak-day-name {
+    font-size: 9px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* ── Reflection History ── */
+  .history-section {
+    margin-top: 8px;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .section-heading {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .history-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  .history-empty {
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .history-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .history-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .entry-date-block { display: flex; align-items: center; gap: 10px; }
+
+  .entry-date-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green);
+    background: var(--green-light);
+    border: 1px solid #b3dece;
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  .entry-weekday {
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .entry-progress-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    background: var(--surface);
+  }
+
+  .entry-progress-badge.full {
+    color: var(--green);
+    background: var(--green-light);
+    border-color: #b3dece;
+  }
+
+  .history-entry-body {
+    padding: 14px 16px;
+  }
+
+  .entry-reflection-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .entry-habits {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .habit-chip {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--green-light);
+    color: var(--green);
+    border: 1px solid #b3dece;
+  }
+
+  .habit-chip.missed {
+    background: var(--surface2);
+    color: var(--text3);
+    border-color: var(--border);
+  }
+
+  .delete-entry {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 16px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .delete-entry:hover { color: var(--coral); }
+
+  .reset-day-btn {
+    font-size: 12px;
+    color: var(--text3);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: border-color 0.15s, color 0.15s;
+    float: right;
+  }
+
+  .reset-day-btn:hover { border-color: var(--border2); color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo"><span></span>Daily Systems Tracker</div>
+    <div class="date-chip" id="dateChip"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Summary -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="summary-num" id="doneCount">0</div>
+      <div class="summary-lbl">Done today</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num" id="totalCount">16</div>
+      <div class="summary-lbl">Total habits</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num" id="streakCount">0</div>
+      <div class="summary-lbl">Day streak</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-section">
+    <div class="progress-meta">
+      <span class="progress-text" id="progressText">0 of 16 systems followed today</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Pillar cards -->
+  <div class="pillars-grid" id="pillarsGrid"></div>
+
+  <!-- Streak -->
+  <div class="streak-card">
+    <div class="card-label">7-day consistency streak</div>
+    <div class="streak-dots" id="streakDots"></div>
+  </div>
+
+  <!-- Today's reflection -->
+  <div class="reflection-card">
+    <div class="card-label">Daily reflection — what did my system produce today?</div>
+    <textarea id="reflectionInput" placeholder="What moved forward because of your system today? What will you improve tomorrow?"></textarea>
+    <div style="display:flex;align-items:center;margin-top:10px;">
+      <button class="save-btn" onclick="saveReflection()">Save reflection</button>
+      <span class="save-confirm" id="saveConfirm">✓ Saved</span>
+    </div>
+  </div>
+
+  <!-- Reflection history -->
+  <div class="history-section">
+    <div class="history-header">
+      <div class="section-heading">Reflection history</div>
+      <div class="history-count" id="historyCount">0 entries</div>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+</main>
+
+<script>
+const PILLARS = [
+  { title: "Morning system", color: "#2d7a5f", dot: "#4aaa84",
+    items: ["Wake up at set time","Make bed immediately","Drink a full glass of water","90 min focused work before emails"] },
+  { title: "Body & health", color: "#5a3e8a", dot: "#7c5fb5",
+    items: ["Move / walk / exercise","Eat a prepared healthy meal","No phone 30 min before sleep","Sleep by target time"] },
+  { title: "Work & growth", color: "#1e5fa8", dot: "#3a83d4",
+    items: ["Work on #1 priority task first","Review & improve one thing","Read or learn something new","Connect with someone useful"] },
+  { title: "Evening review", color: "#c0442a", dot: "#e06040",
+    items: ["Review what system I followed","Plan tomorrow's key task","Gratitude — one good thing","Phone away, wind down"] }
+];
+
+const todayKey = () => new Date().toISOString().split('T')[0];
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('sys_' + todayKey()) || '{}'); } catch { return {}; }
+}
+function saveStateData(s) {
+  localStorage.setItem('sys_' + todayKey(), JSON.stringify(s));
+}
+function loadStreak() {
+  try { return JSON.parse(localStorage.getItem('sys_streak') || '[]'); } catch { return []; }
+}
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('sys_reflections') || '[]'); } catch { return []; }
+}
+function saveHistory(h) {
+  localStorage.setItem('sys_reflections', JSON.stringify(h));
+}
+
+let state = loadState();
+
+function toggle(pi, ii) {
+  const k = pi + '_' + ii;
+  state[k] = !state[k];
+  saveStateData(state);
+  render();
+  updateStreak();
+}
+
+function resetDay() {
+  if (!confirm('Reset all checks for today?')) return;
+  state = {};
+  saveStateData(state);
+  render();
+}
+
+function countDone() {
+  return PILLARS.reduce((acc, p, pi) => acc + p.items.filter((_, ii) => state[pi + '_' + ii]).length, 0);
+}
+
+function render() {
+  const total = PILLARS.reduce((a, p) => a + p.items.length, 0);
+  const done = countDone();
+  const pct = total ? Math.round(done / total * 100) : 0;
+
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = done + ' of ' + total + ' systems followed today';
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  const grid = document.getElementById('pillarsGrid');
+  grid.innerHTML = PILLARS.map((p, pi) => {
+    const pillarDone = p.items.filter((_, ii) => state[pi + '_' + ii]).length;
+    const rows = p.items.map((item, ii) => {
+      const checked = !!state[pi + '_' + ii];
+      return `<div class="check-row" onclick="toggle(${pi},${ii})">
+        <div class="check-box${checked ? ' done' : ''}"></div>
+        <div class="check-label${checked ? ' done' : ''}">${item}</div>
+      </div>`;
+    }).join('');
+    return `<div class="pillar-card">
+      <div class="pillar-header">
+        <div class="pillar-dot" style="background:${p.dot}"></div>
+        <div class="pillar-title" style="color:${p.color}">${p.title}</div>
+        <div class="pillar-count">${pillarDone}/${p.items.length}</div>
+      </div>
+      <div class="check-list">${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateStreak() {
+  const streak = loadStreak();
+  const done = countDone();
+  const total = PILLARS.reduce((a, p) => a + p.items.length, 0);
+  const allDone = done === total;
+  const today = todayKey();
+  const existing = streak.find(d => d.date === today);
+  if (existing) existing.done = allDone;
+  else streak.push({ date: today, done: allDone });
+  const trimmed = streak.slice(-30);
+  localStorage.setItem('sys_streak', JSON.stringify(trimmed));
+  renderStreak(trimmed);
+}
+
+function renderStreak(data) {
+  if (!data) data = loadStreak();
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  const labels = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const container = document.getElementById('streakDots');
+  container.innerHTML = days.map(date => {
+    const found = data.find(s => s.date === date);
+    const isToday = date === todayKey();
+    const isDone = found && found.done;
+    const dayName = labels[new Date(date + 'T12:00:00').getDay()];
+    return `<div class="streak-item">
+      <div class="streak-dot${isDone ? ' filled' : ''}${isToday ? ' today-ring' : ''}">${isDone ? '' : dayName}</div>
+      <div class="streak-day-name">${dayName}</div>
+    </div>`;
+  }).join('');
+
+  let streak = 0;
+  const all = data.slice();
+  for (let i = all.length - 1; i >= 0; i--) {
+    if (all[i].done) streak++; else break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+}
+
+// ── Reflection save ──
+function saveReflection() {
+  const text = document.getElementById('reflectionInput').value.trim();
+  if (!text) return;
+
+  const done = countDone();
+  const total = PILLARS.reduce((a, p) => a + p.items.length, 0);
+  const completedItems = [];
+  PILLARS.forEach((p, pi) => {
+    p.items.forEach((item, ii) => {
+      if (state[pi + '_' + ii]) completedItems.push(item);
+    });
+  });
+
+  const history = loadHistory();
+  const today = todayKey();
+  const existingIdx = history.findIndex(e => e.date === today);
+
+  const entry = { date: today, reflection: text, done, total, habits: completedItems };
+
+  if (existingIdx >= 0) history[existingIdx] = entry;
+  else history.unshift(entry);
+
+  saveHistory(history);
+  state.reflection = text;
+  saveStateData(state);
+
+  const confirm = document.getElementById('saveConfirm');
+  confirm.style.opacity = '1';
+  setTimeout(() => confirm.style.opacity = '0', 2000);
+
+  renderHistory();
+}
+
+function deleteEntry(date) {
+  if (!confirm('Delete this reflection entry?')) return;
+  const history = loadHistory().filter(e => e.date !== date);
+  saveHistory(history);
+  renderHistory();
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatDateShort(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getWeekday(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const container = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCount');
+
+  countEl.textContent = history.length + (history.length === 1 ? ' entry' : ' entries');
+
+  if (history.length === 0) {
+    container.innerHTML = `<div class="history-empty">
+      No reflections saved yet.<br>
+      Save your first reflection above to start tracking your progress.
+    </div>`;
+    return;
+  }
+
+  const total = PILLARS.reduce((a, p) => a + p.items.length, 0);
+
+  container.innerHTML = '<div class="history-list">' + history.map(entry => {
+    const pct = entry.total ? Math.round(entry.done / entry.total * 100) : 0;
+    const isFull = entry.done === (entry.total || total);
+    const habits = (entry.habits || []);
+    const missedCount = (entry.total || total) - entry.done;
+
+    const habitChips = habits.slice(0, 6).map(h =>
+      `<span class="habit-chip">${h}</span>`
+    ).join('');
+    const moreChip = habits.length > 6
+      ? `<span class="habit-chip missed">+${habits.length - 6} more</span>` : '';
+    const missedNote = missedCount > 0
+      ? `<span class="habit-chip missed">${missedCount} missed</span>` : '';
+
+    return `<div class="history-entry">
+      <div class="history-entry-header">
+        <div class="entry-date-block">
+          <div class="entry-date-pill">${formatDateShort(entry.date)}</div>
+          <div class="entry-weekday">${getWeekday(entry.date)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="entry-progress-badge${isFull ? ' full' : ''}">${entry.done}/${entry.total || total} · ${pct}%</div>
+          <button class="delete-entry" onclick="deleteEntry('${entry.date}')" title="Delete entry">×</button>
+        </div>
+      </div>
+      <div class="history-entry-body">
+        <div class="entry-reflection-text">${entry.reflection.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        ${habits.length > 0 ? `<div class="entry-habits">${habitChips}${moreChip}${missedNote}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ── Init ──
+const now = new Date();
+document.getElementById('dateChip').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+// Pre-fill today's reflection if saved
+if (state.reflection) {
+  document.getElementById('reflectionInput').value = state.reflection;
+}
+
+render();
+renderStreak();
+renderHistory();
+updateStreak();
+</script>
+</body>
+</html>
